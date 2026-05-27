@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
+/* eslint-disable no-unused-vars */
+import { useState } from "react";
 
 // ─────────────────────────────────────────────
 // BRAND CONFIG — ROMCO BUILDERS
 // ─────────────────────────────────────────────
+// eslint-disable-next-line no-unused-vars
 const BRAND = {
   name: "ROMCO",
   division: "BUILDERS",
@@ -213,7 +215,7 @@ function AdminDashboard() {
   const activeProjects = SAMPLE_PROJECTS.filter(p=>p.status==="In Progress").length;
   const openTasks = SAMPLE_TASKS.filter(t=>!t.done).length;
   const pendingCOs = SAMPLE_CHANGE_ORDERS.filter(c=>c.status==="Pending Approval").length;
-  const unreadMsgs = SAMPLE_MESSAGES.filter(m=>!m.read && m.fromType==="client").length;
+  const _unreadMsgs = SAMPLE_MESSAGES.filter(m=>!m.read && m.fromType==="client").length;
 
   return (
     <div>
@@ -373,7 +375,7 @@ function Projects() {
 
   if(detail) {
     const p=detail;
-    const budgetPct = p.budget>0 ? Math.round(p.spent/p.budget*100) : 0;
+    const _budgetPct = p.budget>0 ? Math.round(p.spent/p.budget*100) : 0;
     const projDocs = SAMPLE_DOCS.filter(d=>d.projectId===p.id);
     const projTasks = SAMPLE_TASKS.filter(t=>t.projectId===p.id);
     const projCOs = SAMPLE_CHANGE_ORDERS.filter(c=>c.projectId===p.id);
@@ -607,7 +609,7 @@ function Tasks() {
 function Financials() {
   const [invoices, setInvoices] = useState(SAMPLE_INVOICES);
   const totalContract = SAMPLE_PROJECTS.reduce((s,p)=>s+p.budget,0);
-  const totalSpent = SAMPLE_PROJECTS.reduce((s,p)=>s+p.spent,0);
+  const _totalSpent = SAMPLE_PROJECTS.reduce((s,p)=>s+p.spent,0);
   const pipeline = SAMPLE_LEADS.filter(l=>!["Won","Lost"].includes(l.status)).reduce((s,l)=>s+l.value,0);
   const collected = invoices.filter(i=>i.status==="Paid").reduce((s,i)=>s+i.amount,0);
   return (
@@ -678,8 +680,8 @@ function Financials() {
 function ClientPortalDashboard({ project, user }) {
   const pendingCOs = SAMPLE_CHANGE_ORDERS.filter(c=>c.projectId===project.id&&c.status==="Pending Approval");
   const pendingInvoices = SAMPLE_INVOICES.filter(i=>i.projectId===project.id&&i.status==="Pending");
-  const unreadMsgs = SAMPLE_MESSAGES.filter(m=>m.projectId===project.id&&m.fromType==="team"&&!m.read);
-  const budgetPct = project.budget>0?Math.round(project.spent/project.budget*100):0;
+  const _unreadMsgs = SAMPLE_MESSAGES.filter(m=>m.projectId===project.id&&m.fromType==="team"&&!m.read);
+  const _budgetPct = project.budget>0?Math.round(project.spent/project.budget*100):0;
 
   return (
     <div>
@@ -1020,7 +1022,7 @@ function ClientPortalShell({ user, onLogout }) {
   const project = SAMPLE_PROJECTS.find(p=>p.id===user.projectId)||SAMPLE_PROJECTS[0];
   const pendingCOs = SAMPLE_CHANGE_ORDERS.filter(c=>c.projectId===project.id&&c.status==="Pending Approval").length;
   const pendingInv = SAMPLE_INVOICES.filter(i=>i.projectId===project.id&&["Pending","Overdue"].includes(i.status)).length;
-  const unreadMsgs = SAMPLE_MESSAGES.filter(m=>m.projectId===project.id&&m.fromType==="team"&&!m.read).length;
+  const _unreadMsgs = SAMPLE_MESSAGES.filter(m=>m.projectId===project.id&&m.fromType==="team"&&!m.read).length;
 
   const tabs = [
     { id:"overview", label:"Overview", icon:"⊞" },
@@ -1091,7 +1093,7 @@ function ClientPortalShell({ user, onLogout }) {
 function ContractorSidebar({ user, activeTab, setActiveTab, onLogout }) {
   const pendingCOs = CONTRACTOR_CHANGE_ORDERS.filter(c=>c.contractorId===user.id&&c.status==="Pending Approval").length;
   const pendingInv = CONTRACTOR_INVOICES.filter(i=>i.contractorId===user.id&&["Pending","Pending Approval"].includes(i.status)).length;
-  const unreadMsgs = CONTRACTOR_MESSAGES.filter(m=>m.contractorId===user.id&&m.fromType==="pm"&&!m.read).length;
+  const _unreadMsgs = CONTRACTOR_MESSAGES.filter(m=>m.contractorId===user.id&&m.fromType==="pm"&&!m.read).length;
   const tabs = [
     { id:"dashboard", label:"My Dashboard", icon:"⊞" },
     { id:"schedule", label:"Schedule & Jobs", icon:"📅" },
@@ -1559,8 +1561,10 @@ function AdminContractors({ onPreviewContractor }) {
     const myInvoices = CONTRACTOR_INVOICES.filter(i=>i.contractorId===c.id);
     const myCOs = CONTRACTOR_CHANGE_ORDERS.filter(co=>co.contractorId===c.id);
     const myProjects = SAMPLE_PROJECTS.filter(p=>c.assignedProjects.includes(p.id));
-    const licDays = daysUntil(c.licenseExp);
-    const insDays = daysUntil(c.insuranceExp);
+    // eslint-disable-next-line no-unused-vars
+  const licDays = daysUntil(c.licenseExp);
+    // eslint-disable-next-line no-unused-vars
+  const insDays = daysUntil(c.insuranceExp);
     return (
       <div>
         <button onClick={()=>setSelected(null)} style={{ background:"none", border:"none", color:"#D4AF37", fontWeight:600, cursor:"pointer", fontSize:14, marginBottom:20, padding:0 }}>← Back to Contractors</button>
@@ -1772,7 +1776,7 @@ function AdminPortalManager({ onSwitchToClientView }) {
 
 function AdminCRMShell({ onLogout, onPreviewClient, onPreviewContractor }) {
   const [active, setActive] = useState("dashboard");
-  const unreadMsgs = SAMPLE_MESSAGES.filter(m=>!m.read&&m.fromType==="client").length;
+  const _unreadMsgs = SAMPLE_MESSAGES.filter(m=>!m.read&&m.fromType==="client").length;
   const contractorAlerts = CONTRACTOR_USERS.filter(c=>{
     const ld=Math.ceil((new Date(c.licenseExp)-new Date())/(1000*60*60*24));
     const id=Math.ceil((new Date(c.insuranceExp)-new Date())/(1000*60*60*24));
