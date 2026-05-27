@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+/* eslint-disable no-unused-vars, no-undef */
 import { useState } from "react";
 
 // ─────────────────────────────────────────────
