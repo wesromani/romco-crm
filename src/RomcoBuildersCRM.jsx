@@ -988,25 +988,6 @@ function LoginScreen({ onLogin, onAdminLogin, onContractorLogin }) {
           {error&&<div style={{ color:"#E87070", fontSize:12, marginBottom:12, padding:"8px 12px", background:"#3A1A1A", borderRadius:6 }}>{error}</div>}
           <button onClick={handleLogin} style={{ width:"100%", background:"#D4AF37", color:"#1A1A1A", border:"none", borderRadius:8, padding:"13px", fontWeight:700, fontSize:15, cursor:"pointer", marginTop:8 }}>{btnLabel}</button>
           <div style={{ marginTop:20, padding:"14px", background:"#1A1A1A", borderRadius:8 }}>
-            <div style={{ fontSize:11, color:"#888888", marginBottom:8, letterSpacing:1 }}>DEMO CREDENTIALS</div>
-            {tab==="client" && (
-              <div style={{ fontSize:12, color:"#9A9A9A", lineHeight:1.9 }}>
-                <div>📧 mchen@email.com · <span style={{ color:"#D4AF37" }}>chen2026</span></div>
-                <div>📧 dev@cgr.com · <span style={{ color:"#D4AF37" }}>cgr2026</span></div>
-                <div>📧 info@brickellplaza.com · <span style={{ color:"#D4AF37" }}>brickell2026</span></div>
-              </div>
-            )}
-            {tab==="contractor" && (
-              <div style={{ fontSize:12, color:"#9A9A9A", lineHeight:1.9 }}>
-                <div>🔌 juan@gomezelectric.com · <span style={{ color:"#D4AF37" }}>gomez2026</span> <span style={{ color:"#888", fontSize:11 }}>(Electrical)</span></div>
-                <div>🔧 phrib@sfplumbing.com · <span style={{ color:"#D4AF37" }}>hrib2026</span> <span style={{ color:"#888", fontSize:11 }}>(Plumbing)</span></div>
-                <div>🏗 mroofing@sunroof.com · <span style={{ color:"#D4AF37" }}>sun2026</span> <span style={{ color:"#888", fontSize:11 }}>(Roofing)</span></div>
-              </div>
-            )}
-            {tab==="admin" && (
-              <div style={{ fontSize:12, color:"#9A9A9A" }}>📧 admin@romcobuilders.com · <span style={{ color:"#D4AF37" }}>romco2026</span></div>
-            )}
-          </div>
         </div>
       </div>
     </div>
