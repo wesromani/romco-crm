@@ -62,7 +62,7 @@ const SAMPLE_DOCS = [
   { id:1, name:"Chen - Signed Contract.pdf", projectId:1, project:"Chen Residence Renovation", type:"Contract", uploaded:"2026-05-12", size:"2.4 MB", uploader:"John R.", clientVisible:true },
   { id:2, name:"Brickell - Permit Application.pdf", projectId:2, project:"Brickell Plaza Fl.3", type:"Permit", uploaded:"2026-05-15", size:"5.1 MB", uploader:"Sarah K.", clientVisible:true },
   { id:3, name:"Coral Gables - Change Order #3.pdf", projectId:3, project:"Coral Gables Flagship", type:"Change Order", uploaded:"2026-05-18", size:"0.8 MB", uploader:"Sarah K.", clientVisible:true },
-  { id:4, name:"Romco - Certificate of Insurance 2026.pdf", projectId:null, project:"Company", type:"Insurance", uploaded:"2026-01-05", size:"1.2 MB", uploader:"Admin", clientVisible:false },
+  { id:4, name:"Romco - Certificate of Insurance 2026.pdf", projectId:0, project:"Company", type:"Insurance", uploaded:"2026-01-05", size:"1.2 MB", uploader:"Admin", clientVisible:false },
   { id:5, name:"Wynwood - Architectural Plans v2.pdf", projectId:4, project:"Wynwood Arts Conversion", type:"Plans", uploaded:"2026-05-09", size:"18.3 MB", uploader:"Kevin Lam", clientVisible:true },
   { id:6, name:"Chen - Selection Sheet Kitchen.pdf", projectId:1, project:"Chen Residence Renovation", type:"Selections", uploaded:"2026-05-20", size:"3.1 MB", uploader:"John R.", clientVisible:true },
 ];
@@ -71,7 +71,7 @@ const SAMPLE_TASKS = [
   { id:1, title:"Submit Brickell permit application", project:"Brickell Plaza Fl.3", projectId:2, assignee:"Sarah K.", due:"2026-05-28", priority:"High", done:false },
   { id:2, title:"Order framing materials - Chen job", project:"Chen Residence", projectId:1, assignee:"John R.", due:"2026-07-25", priority:"Medium", done:false },
   { id:3, title:"Schedule final walkthrough - Coral Gables", project:"Coral Gables Flagship", projectId:3, assignee:"Sarah K.", due:"2026-07-28", priority:"High", done:false },
-  { id:4, title:"Send proposal to Nguyen follow-up", project:"Lead", projectId:null, assignee:"John R.", due:"2026-11-01", priority:"Low", done:true },
+  { id:4, title:"Send proposal to Nguyen follow-up", project:"Lead", projectId:0, assignee:"John R.", due:"2026-11-01", priority:"Low", done:true },
   { id:5, title:"Collect deposit - Vasquez", project:"Vasquez Bath", projectId:5, assignee:"John R.", due:"2026-06-10", priority:"High", done:false },
   { id:6, title:"Review Wynwood design drawings", project:"Wynwood Arts Conversion", projectId:4, assignee:"Kevin Lam", due:"2026-06-01", priority:"Medium", done:false },
 ];
