@@ -987,7 +987,7 @@ function LoginScreen({ onLogin, onAdminLogin, onContractorLogin }) {
           </div>
           {error&&<div style={{ color:"#E87070", fontSize:12, marginBottom:12, padding:"8px 12px", background:"#3A1A1A", borderRadius:6 }}>{error}</div>}
           <button onClick={handleLogin} style={{ width:"100%", background:"#D4AF37", color:"#1A1A1A", border:"none", borderRadius:8, padding:"13px", fontWeight:700, fontSize:15, cursor:"pointer", marginTop:8 }}>{btnLabel}</button>
-          <div style={{ marginTop:20, padding:"14px", background:"#1A1A1A", borderRadius:8 }}>
+
         </div>
       </div>
     </div>
