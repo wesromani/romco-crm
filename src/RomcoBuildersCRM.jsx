@@ -1840,7 +1840,7 @@ export default function RomcoCRM() {
       <div style={{ position:"relative" }}>
         <div style={{ position:"fixed", top:0, left:0, right:0, background:"#D4AF37", color:"#1A1A1A", padding:"10px 20px", zIndex:999, display:"flex", alignItems:"center", gap:16, fontSize:13 }}>
           <span style={{ fontWeight:700 }}>👁 Admin Preview — Client Portal</span>
-          <span>Viewing as: {previewUser.name}</span>
+          <span>Viewing as: {previewUser?.name||previewUser?.full_name||"Client"}</span>
           <button onClick={()=>{ setPreviewUser(null); setAppState("admin"); }} style={{ marginLeft:"auto", background:"#1A1A1A", color:"#D4AF37", border:"none", borderRadius:6, padding:"6px 14px", cursor:"pointer", fontWeight:600, fontSize:12 }}>← Back to CRM</button>
         </div>
         <div style={{ marginTop:44 }}>
@@ -1854,7 +1854,7 @@ export default function RomcoCRM() {
       <div style={{ position:"relative" }}>
         <div style={{ position:"fixed", top:0, left:0, right:0, background:"#D4AF37", color:"#1A1A1A", padding:"10px 20px", zIndex:999, display:"flex", alignItems:"center", gap:16, fontSize:13 }}>
           <span style={{ fontWeight:700 }}>👁 Admin Preview — Contractor Portal</span>
-          <span>Viewing as: {previewContractor.name} · {previewContractor.company}</span>
+          <span>Viewing as: {previewContractor?.name||previewContractor?.full_name||"Contractor"} · {previewContractor?.company||""}</span>
           <button onClick={()=>{ setPreviewContractor(null); setAppState("admin"); }} style={{ marginLeft:"auto", background:"#1A1A1A", color:"#D4AF37", border:"none", borderRadius:6, padding:"6px 14px", cursor:"pointer", fontWeight:600, fontSize:12 }}>← Back to CRM</button>
         </div>
         <div style={{ marginTop:44 }}>
