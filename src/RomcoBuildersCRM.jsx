@@ -213,7 +213,7 @@ function AdminDashboard() {
   const totalPipeline = SAMPLE_LEADS.filter(l=>!["Won","Lost"].includes(l.status)).reduce((s,l)=>s+l.value,0);
   const wonRevenue = SAMPLE_LEADS.filter(l=>l.status==="Won").reduce((s,l)=>s+l.value,0);
   const activeProjects = SAMPLE_PROJECTS.filter(p=>p.status==="In Progress").length;
-  const openTasks = SAMPLE_TASKS.filter(t=>!t.done).length;
+  const openTasks = SAMPLE_TASKS.filter(t=>t&&!t.done).length;
   const pendingCOs = SAMPLE_CHANGE_ORDERS.filter(c=>c.status==="Pending Approval").length;
   const unreadMsgs = SAMPLE_MESSAGES.filter(m=>!m.read && m.fromType==="client").length;
 
@@ -377,7 +377,7 @@ function Projects() {
     const p=detail;
     const budgetPct = p.budget>0 ? Math.round(p.spent/p.budget*100) : 0;
     const projDocs = SAMPLE_DOCS.filter(d=>d.projectId===p.id);
-    const projTasks = SAMPLE_TASKS.filter(t=>t.projectId===p.id);
+    const projTasks = SAMPLE_TASKS.filter(t=>t&&t.projectId===p.id);
     const projCOs = SAMPLE_CHANGE_ORDERS.filter(c=>c.projectId===p.id);
     const projLogs = SAMPLE_DAILY_LOGS.filter(l=>l.projectId===p.id);
     return (
@@ -575,7 +575,7 @@ function Documents() {
 function Tasks() {
   const [tasks, setTasks] = useState(SAMPLE_TASKS);
   const [filter, setFilter] = useState("Open");
-  const visible = filter==="All" ? tasks : filter==="Open" ? tasks.filter(t=>!t.done) : tasks.filter(t=>t.done);
+  const visible = filter==="All" ? tasks : filter==="Open" ? tasks.filter(t=>t&&!t.done) : tasks.filter(t=>t&&t.done);
   const toggle = (id) => setTasks(tasks.map(t=>t.id===id?{...t,done:!t.done}:t));
   const prioColors = { High:"#D4AF37", Medium:"#185FA5", Low:"#888" };
   return (
