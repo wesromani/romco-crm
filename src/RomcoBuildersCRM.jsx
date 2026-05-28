@@ -1,5 +1,59 @@
 /* eslint-disable no-unused-vars, no-undef */
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+
+// ─────────────────────────────────────────────
+// SUPABASE CLIENT
+// ─────────────────────────────────────────────
+let _sb = null;
+const getSB = async () => {
+  if(_sb) return _sb;
+  const {createClient} = await import("@supabase/supabase-js");
+  _sb = createClient(process.env.REACT_APP_SUPABASE_URL, process.env.REACT_APP_SUPABASE_ANON_KEY);
+  return _sb;
+};
+
+// Helper: fetch table data
+const dbFetch = async (table, query={}) => {
+  try {
+    const sb = await getSB();
+    let q = sb.from(table).select("*");
+    if(query.order) q = q.order(query.order, { ascending: query.asc ?? false });
+    if(query.eq) q = q.eq(query.eq[0], query.eq[1]);
+    const { data, error } = await q;
+    if(error) { console.warn(`DB fetch ${table}:`, error.message); return null; }
+    return data;
+  } catch(e) { console.warn(`DB fetch ${table}:`, e.message); return null; }
+};
+
+// Helper: insert row
+const dbInsert = async (table, row) => {
+  try {
+    const sb = await getSB();
+    const { data, error } = await sb.from(table).insert(row).select().single();
+    if(error) { console.warn(`DB insert ${table}:`, error.message); return null; }
+    return data;
+  } catch(e) { console.warn(`DB insert ${table}:`, e.message); return null; }
+};
+
+// Helper: update row
+const dbUpdate = async (table, id, updates) => {
+  try {
+    const sb = await getSB();
+    const { data, error } = await sb.from(table).update(updates).eq("id", id).select().single();
+    if(error) { console.warn(`DB update ${table}:`, error.message); return null; }
+    return data;
+  } catch(e) { console.warn(`DB update ${table}:`, e.message); return null; }
+};
+
+// Helper: delete row
+const dbDelete = async (table, id) => {
+  try {
+    const sb = await getSB();
+    const { error } = await sb.from(table).delete().eq("id", id);
+    if(error) { console.warn(`DB delete ${table}:`, error.message); return false; }
+    return true;
+  } catch(e) { console.warn(`DB delete ${table}:`, e.message); return false; }
+};
 
 // ─────────────────────────────────────────────
 // BRAND CONFIG — ROMCO BUILDERS
@@ -62,7 +116,7 @@ const SAMPLE_DOCS = [
   { id:1, name:"Chen - Signed Contract.pdf", projectId:1, project:"Chen Residence Renovation", type:"Contract", uploaded:"2026-05-12", size:"2.4 MB", uploader:"John R.", clientVisible:true },
   { id:2, name:"Brickell - Permit Application.pdf", projectId:2, project:"Brickell Plaza Fl.3", type:"Permit", uploaded:"2026-05-15", size:"5.1 MB", uploader:"Sarah K.", clientVisible:true },
   { id:3, name:"Coral Gables - Change Order #3.pdf", projectId:3, project:"Coral Gables Flagship", type:"Change Order", uploaded:"2026-05-18", size:"0.8 MB", uploader:"Sarah K.", clientVisible:true },
-  { id:4, name:"Romco - Certificate of Insurance 2026.pdf", projectId:0, project:"Company", type:"Insurance", uploaded:"2026-01-05", size:"1.2 MB", uploader:"Admin", clientVisible:false },
+  { id:4, name:"Romco - Certificate of Insurance 2026.pdf", projectId:null, project:"Company", type:"Insurance", uploaded:"2026-01-05", size:"1.2 MB", uploader:"Admin", clientVisible:false },
   { id:5, name:"Wynwood - Architectural Plans v2.pdf", projectId:4, project:"Wynwood Arts Conversion", type:"Plans", uploaded:"2026-05-09", size:"18.3 MB", uploader:"Kevin Lam", clientVisible:true },
   { id:6, name:"Chen - Selection Sheet Kitchen.pdf", projectId:1, project:"Chen Residence Renovation", type:"Selections", uploaded:"2026-05-20", size:"3.1 MB", uploader:"John R.", clientVisible:true },
 ];
@@ -71,7 +125,7 @@ const SAMPLE_TASKS = [
   { id:1, title:"Submit Brickell permit application", project:"Brickell Plaza Fl.3", projectId:2, assignee:"Sarah K.", due:"2026-05-28", priority:"High", done:false },
   { id:2, title:"Order framing materials - Chen job", project:"Chen Residence", projectId:1, assignee:"John R.", due:"2026-07-25", priority:"Medium", done:false },
   { id:3, title:"Schedule final walkthrough - Coral Gables", project:"Coral Gables Flagship", projectId:3, assignee:"Sarah K.", due:"2026-07-28", priority:"High", done:false },
-  { id:4, title:"Send proposal to Nguyen follow-up", project:"Lead", projectId:0, assignee:"John R.", due:"2026-11-01", priority:"Low", done:true },
+  { id:4, title:"Send proposal to Nguyen follow-up", project:"Lead", projectId:null, assignee:"John R.", due:"2026-11-01", priority:"Low", done:true },
   { id:5, title:"Collect deposit - Vasquez", project:"Vasquez Bath", projectId:5, assignee:"John R.", due:"2026-06-10", priority:"High", done:false },
   { id:6, title:"Review Wynwood design drawings", project:"Wynwood Arts Conversion", projectId:4, assignee:"Kevin Lam", due:"2026-06-01", priority:"Medium", done:false },
 ];
@@ -210,10 +264,20 @@ function StatCard({ label, value, sub, color="#D4AF37" }) {
 // ─────────────────────────────────────────────
 
 function AdminDashboard() {
-  const totalPipeline = SAMPLE_LEADS.filter(l=>!["Won","Lost"].includes(l.status)).reduce((s,l)=>s+l.value,0);
-  const wonRevenue = SAMPLE_LEADS.filter(l=>l.status==="Won").reduce((s,l)=>s+l.value,0);
-  const activeProjects = SAMPLE_PROJECTS.filter(p=>p.status==="In Progress").length;
-  const openTasks = SAMPLE_TASKS.filter(t=>t&&!t.done).length;
+  const [leads, setLeads] = useState(SAMPLE_LEADS);
+  const [projects, setProjects] = useState(SAMPLE_PROJECTS);
+  const [tasks, setTasks] = useState(SAMPLE_TASKS);
+
+  useEffect(()=>{
+    dbFetch("leads",{order:"created_at",asc:false}).then(data=>{ if(data&&data.length>0) setLeads(data); });
+    dbFetch("projects",{order:"created_at",asc:false}).then(data=>{ if(data&&data.length>0) setProjects(data); });
+    dbFetch("tasks",{order:"due",asc:true}).then(data=>{ if(data&&data.length>0) setTasks(data); });
+  },[]);
+
+  const totalPipeline = leads.filter(l=>!["Won","Lost"].includes(l.status)).reduce((s,l)=>s+(l.value||0),0);
+  const wonRevenue = leads.filter(l=>l.status==="Won").reduce((s,l)=>s+(l.value||0),0);
+  const activeProjects = projects.filter(p=>p.status==="In Progress").length;
+  const openTasks = tasks.filter(t=>t&&!t.done).length;
   const pendingCOs = SAMPLE_CHANGE_ORDERS.filter(c=>c.status==="Pending Approval").length;
   const unreadMsgs = SAMPLE_MESSAGES.filter(m=>!m.read && m.fromType==="client").length;
 
@@ -290,13 +354,30 @@ function LeadPipeline() {
   const [filter, setFilter] = useState("All");
   const [showForm, setShowForm] = useState(false);
   const [selected, setSelected] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ name:"", phone:"", email:"", type:"Home Renovation", value:"", status:"New Lead", source:"", salesperson:"", notes:"" });
   const stages = ["All","New Lead","Appointment Set","Proposal Sent","In Negotiation","Won","Lost"];
   const visible = filter==="All" ? leads : leads.filter(l=>l.status===filter);
-  const save = () => {
+
+  useEffect(()=>{
+    dbFetch("leads",{order:"created_at",asc:false}).then(data=>{
+      if(data&&data.length>0) setLeads(data);
+      setLoading(false);
+    });
+  },[]);
+
+  const save = async () => {
     if(!form.name) return;
-    if(selected) setLeads(leads.map(l=>l.id===selected.id?{...selected,...form,value:Number(form.value)}:l));
-    else setLeads([...leads,{...form,id:Date.now(),value:Number(form.value),date:new Date().toISOString().split("T")[0]}]);
+    if(selected) {
+      const updated = await dbUpdate("leads", selected.id, {...form, value:Number(form.value)});
+      if(updated) setLeads(leads.map(l=>l.id===selected.id?updated:l));
+      else setLeads(leads.map(l=>l.id===selected.id?{...selected,...form,value:Number(form.value)}:l));
+    } else {
+      const newLead = {...form, value:Number(form.value), date:new Date().toISOString().split("T")[0]};
+      const inserted = await dbInsert("leads", newLead);
+      if(inserted) setLeads([inserted,...leads]);
+      else setLeads([{...newLead,id:Date.now()},...leads]);
+    }
     setShowForm(false); setSelected(null);
     setForm({ name:"",phone:"",email:"",type:"Home Renovation",value:"",status:"New Lead",source:"",salesperson:"",notes:"" });
   };
@@ -370,8 +451,15 @@ function LeadPipeline() {
 function Projects() {
   const [filter, setFilter] = useState("All");
   const [detail, setDetail] = useState(null);
+  const [projects, setProjects] = useState(SAMPLE_PROJECTS);
   const statuses = ["All","In Progress","Pre-Construction","Planning","Bidding","Completed"];
-  const visible = filter==="All" ? SAMPLE_PROJECTS : SAMPLE_PROJECTS.filter(p=>p.status===filter);
+  const visible = filter==="All" ? projects : projects.filter(p=>p.status===filter);
+
+  useEffect(()=>{
+    dbFetch("projects",{order:"created_at",asc:false}).then(data=>{
+      if(data&&data.length>0) setProjects(data);
+    });
+  },[]);
 
   if(detail) {
     const p=detail;
@@ -508,9 +596,16 @@ function Projects() {
 
 function Contacts() {
   const [filter, setFilter] = useState("All");
+  const [contacts, setContacts] = useState(SAMPLE_CONTACTS);
   const types = ["All","Client","Team","Subcontractor","Vendor","Government"];
   const typeColors = { Client:"#185FA5", Team:"#0F6E56", Subcontractor:"#854F0B", Vendor:"#534AB7", Government:"#5F5E5A" };
-  const visible = filter==="All" ? SAMPLE_CONTACTS : SAMPLE_CONTACTS.filter(c=>c.type===filter);
+  const visible = filter==="All" ? contacts : contacts.filter(c=>c.type===filter);
+
+  useEffect(()=>{
+    dbFetch("contacts",{order:"name",asc:true}).then(data=>{
+      if(data&&data.length>0) setContacts(data);
+    });
+  },[]);
   return (
     <div>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
@@ -576,7 +671,20 @@ function Tasks() {
   const [tasks, setTasks] = useState(SAMPLE_TASKS);
   const [filter, setFilter] = useState("Open");
   const visible = filter==="All" ? tasks : filter==="Open" ? tasks.filter(t=>t&&!t.done) : tasks.filter(t=>t&&t.done);
-  const toggle = (id) => setTasks(tasks.map(t=>t.id===id?{...t,done:!t.done}:t));
+
+  useEffect(()=>{
+    dbFetch("tasks",{order:"due",asc:true}).then(data=>{
+      if(data&&data.length>0) setTasks(data);
+    });
+  },[]);
+
+  const toggle = async (id) => {
+    const task = tasks.find(t=>t.id===id);
+    if(!task) return;
+    const newDone = !task.done;
+    setTasks(tasks.map(t=>t.id===id?{...t,done:newDone}:t));
+    await dbUpdate("tasks", id, {done:newDone});
+  };
   const prioColors = { High:"#D4AF37", Medium:"#185FA5", Low:"#888" };
   return (
     <div>
@@ -608,8 +716,21 @@ function Tasks() {
 
 function Financials() {
   const [invoices, setInvoices] = useState(SAMPLE_INVOICES);
-  const totalContract = SAMPLE_PROJECTS.reduce((s,p)=>s+p.budget,0);
-  const totalSpent = SAMPLE_PROJECTS.reduce((s,p)=>s+p.spent,0);
+  const [projects, setProjects] = useState(SAMPLE_PROJECTS);
+
+  useEffect(()=>{
+    dbFetch("invoices",{order:"submitted_at",asc:false}).then(data=>{ if(data&&data.length>0) setInvoices(data); });
+    dbFetch("projects",{order:"created_at",asc:false}).then(data=>{ if(data&&data.length>0) setProjects(data); });
+  },[]);
+
+  const markPaid = async (id) => {
+    const paid = new Date().toISOString().split("T")[0];
+    setInvoices(invoices.map(x=>x.id===id?{...x,status:"Paid",paid}:x));
+    await dbUpdate("invoices", id, {status:"Paid", paid});
+  };
+
+  const totalContract = projects.reduce((s,p)=>s+(p.budget||0),0);
+  const totalSpent = projects.reduce((s,p)=>s+(p.spent||0),0);
   const pipeline = SAMPLE_LEADS.filter(l=>!["Won","Lost"].includes(l.status)).reduce((s,l)=>s+l.value,0);
   const collected = invoices.filter(i=>i.status==="Paid").reduce((s,i)=>s+i.amount,0);
   return (
@@ -637,7 +758,7 @@ function Financials() {
                 <td style={{ padding:"12px 14px", color:"#888" }}>{inv.due}</td>
                 <td style={{ padding:"12px 14px" }}><Badge status={inv.status} /></td>
                 <td style={{ padding:"12px 14px" }}>
-                  {inv.status==="Pending"&&<button onClick={()=>setInvoices(invoices.map(x=>x.id===inv.id?{...x,status:"Paid",paid:new Date().toISOString().split("T")[0]}:x))} style={{ background:"#E1F5EE", color:"#0F6E56", border:"none", borderRadius:6, padding:"4px 10px", fontSize:12, cursor:"pointer", fontWeight:600 }}>Mark Paid</button>}
+                  {inv.status==="Pending"&&<button onClick={()=>markPaid(inv.id)} style={{ background:"#E1F5EE", color:"#0F6E56", border:"none", borderRadius:6, padding:"4px 10px", fontSize:12, cursor:"pointer", fontWeight:600 }}>Mark Paid</button>}
                 </td>
               </tr>
             ))}
@@ -930,7 +1051,7 @@ function LoginScreen({ onLogin, onAdminLogin, onContractorLogin }) {
       const {data,error:e} = await sb.auth.signInWithPassword({email:email.trim(),password});
       if(e){setError("Invalid email or password.");setLoading(false);return;}
       const {data:profile} = await sb.from("profiles").select("*").eq("id",data.user.id).single();
-      const role = profile?.role||"admin";
+      const role = profile?.role||"client";
       if(role==="admin"||role==="pm"){onAdminLogin();}
       else if(role==="contractor"){onContractorLogin(profile);}
       else{onLogin(profile);}
