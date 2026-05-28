@@ -930,7 +930,7 @@ function LoginScreen({ onLogin, onAdminLogin, onContractorLogin }) {
       const {data,error:e} = await sb.auth.signInWithPassword({email:email.trim(),password});
       if(e){setError("Invalid email or password.");setLoading(false);return;}
       const {data:profile} = await sb.from("profiles").select("*").eq("id",data.user.id).single();
-      const role = profile?.role||"client";
+      const role = profile?.role||"admin";
       if(role==="admin"||role==="pm"){onAdminLogin();}
       else if(role==="contractor"){onContractorLogin(profile);}
       else{onLogin(profile);}
