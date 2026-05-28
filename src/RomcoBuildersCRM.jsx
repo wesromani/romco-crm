@@ -919,26 +919,24 @@ function LoginScreen({ onLogin, onAdminLogin, onContractorLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleClientLogin = () => {
-    const user = CLIENT_PORTAL_USERS.find(u=>u.email===email&&u.password===password);
-    if(user) { setError(""); onLogin(user); }
-    else setError("Invalid email or password. Try: mchen@email.com / chen2026");
+  const handleLogin = async () => {
+    if(!email.trim()||!password.trim()){setError("Please enter your email and password.");return;}
+    setLoading(true);setError("");
+    try {
+      const {createClient} = await import("@supabase/supabase-js");
+      const sb = createClient(process.env.REACT_APP_SUPABASE_URL,process.env.REACT_APP_SUPABASE_ANON_KEY);
+      const {data,error:e} = await sb.auth.signInWithPassword({email:email.trim(),password});
+      if(e){setError("Invalid email or password.");setLoading(false);return;}
+      const {data:profile} = await sb.from("profiles").select("*").eq("id",data.user.id).single();
+      const role = profile?.role||"client";
+      if(role==="admin"||role==="pm"){onAdminLogin();}
+      else if(role==="contractor"){onContractorLogin(profile);}
+      else{onLogin(profile);}
+    }catch(err){setError("Connection error. Try again.");setLoading(false);}
   };
 
-  const handleContractorLogin = () => {
-    const user = CONTRACTOR_USERS.find(u=>u.email===email&&u.password===password);
-    if(user) { setError(""); onContractorLogin(user); }
-    else setError("Invalid credentials. Try: juan@gomezelectric.com / gomez2026");
-  };
-
-  const handleAdminLogin = () => {
-    if(email==="admin@romcobuilders.com"&&password==="romco2026") { setError(""); onAdminLogin(); }
-    else setError("Invalid admin credentials. Try: admin@romcobuilders.com / romco2026");
-  };
-
-  const handleLogin = tab==="client" ? handleClientLogin : tab==="contractor" ? handleContractorLogin : handleAdminLogin;
-  const placeholderEmail = tab==="client" ? "mchen@email.com" : tab==="contractor" ? "juan@gomezelectric.com" : "admin@romcobuilders.com";
   const btnLabel = tab==="client" ? "Access My Project Portal" : tab==="contractor" ? "Access Contractor Portal" : "Sign In to CRM";
 
   return (
@@ -979,15 +977,15 @@ function LoginScreen({ onLogin, onAdminLogin, onContractorLogin }) {
         <div style={{ background:"#2A2A2A", borderRadius:14, padding:28 }}>
           <div style={{ marginBottom:16 }}>
             <label style={{ fontSize:12, color:"#9A9A9A", display:"block", marginBottom:6, letterSpacing:1 }}>EMAIL ADDRESS</label>
-            <input value={email} onChange={e=>setEmail(e.target.value)} placeholder={placeholderEmail} style={{ width:"100%", background:"#1A1A1A", border:"1px solid #3A3A3A", borderRadius:8, padding:"11px 14px", fontSize:14, color:"#fff", boxSizing:"border-box" }} />
+            <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="your@email.com" style={{ width:"100%", background:"#1A1A1A", border:"1px solid #3A3A3A", borderRadius:8, padding:"11px 14px", fontSize:14, color:"#fff", boxSizing:"border-box" }} />
           </div>
           <div style={{ marginBottom:8 }}>
             <label style={{ fontSize:12, color:"#9A9A9A", display:"block", marginBottom:6, letterSpacing:1 }}>PASSWORD</label>
             <input type="password" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleLogin()} placeholder="••••••••" style={{ width:"100%", background:"#1A1A1A", border:"1px solid #3A3A3A", borderRadius:8, padding:"11px 14px", fontSize:14, color:"#fff", boxSizing:"border-box" }} />
           </div>
           {error&&<div style={{ color:"#E87070", fontSize:12, marginBottom:12, padding:"8px 12px", background:"#3A1A1A", borderRadius:6 }}>{error}</div>}
-          <button onClick={handleLogin} style={{ width:"100%", background:"#D4AF37", color:"#1A1A1A", border:"none", borderRadius:8, padding:"13px", fontWeight:700, fontSize:15, cursor:"pointer", marginTop:8 }}>{btnLabel}</button>
-
+          <button onClick={handleLogin} disabled={loading} style={{ width:"100%", background:"#D4AF37", color:"#1A1A1A", border:"none", borderRadius:8, padding:"13px", fontWeight:700, fontSize:15, cursor:loading?"not-allowed":"pointer", marginTop:8, opacity:loading?0.7:1 }}>{loading?"Signing in...":btnLabel}</button>
+          <button onClick={()=>setError("Please contact john@romcobuilders.com to reset your password.")} style={{ width:"100%", background:"none", border:"none", color:"#666", fontSize:12, cursor:"pointer", padding:"12px 8px 0", textAlign:"center" }}>Forgot your password?</button>
         </div>
       </div>
     </div>
