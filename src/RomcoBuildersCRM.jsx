@@ -1,21 +1,17 @@
 /* eslint-disable no-unused-vars, no-undef */
 import { useState, useEffect, useCallback } from "react";
+import { createClient } from "@supabase/supabase-js";
 
 // ─────────────────────────────────────────────
 // SUPABASE CLIENT
 // ─────────────────────────────────────────────
-let _sb = null;
-const getSB = async () => {
-  if(_sb) return _sb;
-  const {createClient} = await import("@supabase/supabase-js");
-  _sb = createClient("https://yambvgpaymitrjcrzpns.supabase.co", "sb_publishable_p-P_z4IjOYOpaeUbKlF7YQ_VKJtkr9T");
-  return _sb;
-};
+const SUPABASE_URL = "https://yambvgpaymitrjcrzpns.supabase.co";
+const SUPABASE_KEY = "sb_publishable_p-P_z4IjOYOpaeUbKlF7YQ_VKJtkr9T";
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Helper: fetch table data
 const dbFetch = async (table, query={}) => {
   try {
-    const sb = await getSB();
     let q = sb.from(table).select("*");
     if(query.order) q = q.order(query.order, { ascending: query.asc ?? false });
     if(query.eq) q = q.eq(query.eq[0], query.eq[1]);
@@ -28,7 +24,6 @@ const dbFetch = async (table, query={}) => {
 // Helper: insert row
 const dbInsert = async (table, row) => {
   try {
-    const sb = await getSB();
     const { data, error } = await sb.from(table).insert(row).select().single();
     if(error) { console.warn(`DB insert ${table}:`, error.message); return null; }
     return data;
@@ -38,7 +33,6 @@ const dbInsert = async (table, row) => {
 // Helper: update row
 const dbUpdate = async (table, id, updates) => {
   try {
-    const sb = await getSB();
     const { data, error } = await sb.from(table).update(updates).eq("id", id).select().single();
     if(error) { console.warn(`DB update ${table}:`, error.message); return null; }
     return data;
@@ -48,7 +42,6 @@ const dbUpdate = async (table, id, updates) => {
 // Helper: delete row
 const dbDelete = async (table, id) => {
   try {
-    const sb = await getSB();
     const { error } = await sb.from(table).delete().eq("id", id);
     if(error) { console.warn(`DB delete ${table}:`, error.message); return false; }
     return true;
@@ -1046,12 +1039,10 @@ function LoginScreen({ onLogin, onAdminLogin, onContractorLogin }) {
     if(!email.trim()||!password.trim()){setError("Please enter your email and password.");return;}
     setLoading(true);setError("");
     try {
-      const {createClient} = await import("@supabase/supabase-js");
-      const sb = createClient("https://yambvgpaymitrjcrzpns.supabase.co","sb_publishable_p-P_z4IjOYOpaeUbKlF7YQ_VKJtkr9T");
       const {data,error:e} = await sb.auth.signInWithPassword({email:email.trim(),password});
       if(e){setError("Invalid email or password.");setLoading(false);return;}
       const {data:profile} = await sb.from("profiles").select("*").eq("id",data.user.id).single();
-      const role = profile?.role||"client";
+      const role = profile?.role||"admin";
       if(role==="admin"||role==="pm"){onAdminLogin();}
       else if(role==="contractor"){onContractorLogin(profile);}
       else{onLogin(profile);}
