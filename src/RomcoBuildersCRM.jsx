@@ -8,7 +8,7 @@ let _sb = null;
 const getSB = async () => {
   if(_sb) return _sb;
   const {createClient} = await import("@supabase/supabase-js");
-  _sb = createClient(process.env.REACT_APP_SUPABASE_URL, process.env.REACT_APP_SUPABASE_ANON_KEY);
+  _sb = createClient("https://yambvgpaymitrjcrzpns.supabase.co", "sb_publishable_p-P_z4IjOYOpaeUbKlF7YQ_VKJtkr9T");
   return _sb;
 };
 
@@ -1047,7 +1047,7 @@ function LoginScreen({ onLogin, onAdminLogin, onContractorLogin }) {
     setLoading(true);setError("");
     try {
       const {createClient} = await import("@supabase/supabase-js");
-      const sb = createClient(process.env.REACT_APP_SUPABASE_URL,process.env.REACT_APP_SUPABASE_ANON_KEY);
+      const sb = createClient("https://yambvgpaymitrjcrzpns.supabase.co","sb_publishable_p-P_z4IjOYOpaeUbKlF7YQ_VKJtkr9T");
       const {data,error:e} = await sb.auth.signInWithPassword({email:email.trim(),password});
       if(e){setError("Invalid email or password.");setLoading(false);return;}
       const {data:profile} = await sb.from("profiles").select("*").eq("id",data.user.id).single();
