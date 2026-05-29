@@ -378,7 +378,7 @@ function LeadPipeline() {
     <div>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
         <h2 style={{ fontSize:20, fontWeight:700, color:"#1A1A1A", fontFamily:"Montserrat, Arial, sans-serif", margin:0 }}>Lead Pipeline</h2>
-        <button onClick={()=>{setShowForm(true);setSelected(null);}} style={{ background:"#D4AF37", color:"#fff", border:"none", borderRadius:8, padding:"9px 18px", fontWeight:600, fontSize:13, cursor:"pointer" }}>+ Add Lead</button>
+        <button onClick={()=>{setShowForm(true);setSelected(null);}} style={{ background:"#D4AF37", color:"#fff", border:"none", borderRadius:8, padding:"9px 18px", fontWeight:600, fontSize:13, cursor:"pointer" }}>+ Add Lead</button><button onClick={async()=>{const r=await sb.from("leads").insert({name:"Browser Test",type:"Home Renovation",value:1000,status:"New Lead",date:"2026-05-28"}).select().single();alert(r.error?r.error.message:"SUCCESS: "+r.data.id);}} style={{background:"#333",color:"#fff",border:"none",borderRadius:8,padding:"9px 18px",fontSize:13,cursor:"pointer",marginLeft:8}}>Test DB</button>
       </div>
       <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:20 }}>
         {stages.map(s=><button key={s} onClick={()=>setFilter(s)} style={{ background:filter===s?"#1A1A1A":"#F5F5F5", color:filter===s?"#fff":"#555", border:"none", borderRadius:20, padding:"6px 14px", fontSize:12, cursor:"pointer", fontWeight:filter===s?600:400 }}>{s}</button>)}
