@@ -264,14 +264,14 @@ function StatCard({ label, value, sub, color="#D4AF37" }) {
 // ─────────────────────────────────────────────
 
 function AdminDashboard() {
-  const [leads, setLeads] = useState(SAMPLE_LEADS);
-  const [projects, setProjects] = useState(SAMPLE_PROJECTS);
-  const [tasks, setTasks] = useState(SAMPLE_TASKS);
+  const [leads, setLeads] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [tasks, setTasks] = useState([]);
 
   useEffect(()=>{
-    dbFetch("leads",{order:"created_at",asc:false}).then(data=>{ if(data&&data.length>0) setLeads(data); });
-    dbFetch("projects",{order:"created_at",asc:false}).then(data=>{ if(data&&data.length>0) setProjects(data); });
-    dbFetch("tasks",{order:"due",asc:true}).then(data=>{ if(data&&data.length>0) setTasks(data); });
+    dbFetch("leads",{order:"created_at",asc:false}).then(data=>{ if(data) setLeads(data); });
+    dbFetch("projects",{order:"created_at",asc:false}).then(data=>{ if(data) setProjects(data); });
+    dbFetch("tasks",{order:"due",asc:true}).then(data=>{ if(data) setTasks(data); });
   },[]);
 
   const totalPipeline = leads.filter(l=>!["Won","Lost"].includes(l.status)).reduce((s,l)=>s+(l.value||0),0);
@@ -350,7 +350,7 @@ function AdminDashboard() {
 }
 
 function LeadPipeline() {
-  const [leads, setLeads] = useState(SAMPLE_LEADS);
+  const [leads, setLeads] = useState([]);
   const [filter, setFilter] = useState("All");
   const [showForm, setShowForm] = useState(false);
   const [selected, setSelected] = useState(null);
@@ -361,7 +361,7 @@ function LeadPipeline() {
 
   useEffect(()=>{
     dbFetch("leads",{order:"created_at",asc:false}).then(data=>{
-      if(data&&data.length>0) setLeads(data);
+      if(data) setLeads(data);
       setLoading(false);
     });
   },[]);
@@ -451,13 +451,13 @@ function LeadPipeline() {
 function Projects() {
   const [filter, setFilter] = useState("All");
   const [detail, setDetail] = useState(null);
-  const [projects, setProjects] = useState(SAMPLE_PROJECTS);
+  const [projects, setProjects] = useState([]);
   const statuses = ["All","In Progress","Pre-Construction","Planning","Bidding","Completed"];
   const visible = filter==="All" ? projects : projects.filter(p=>p.status===filter);
 
   useEffect(()=>{
     dbFetch("projects",{order:"created_at",asc:false}).then(data=>{
-      if(data&&data.length>0) setProjects(data);
+      if(data) setProjects(data);
     });
   },[]);
 
@@ -596,14 +596,14 @@ function Projects() {
 
 function Contacts() {
   const [filter, setFilter] = useState("All");
-  const [contacts, setContacts] = useState(SAMPLE_CONTACTS);
+  const [contacts, setContacts] = useState([]);
   const types = ["All","Client","Team","Subcontractor","Vendor","Government"];
   const typeColors = { Client:"#185FA5", Team:"#0F6E56", Subcontractor:"#854F0B", Vendor:"#534AB7", Government:"#5F5E5A" };
   const visible = filter==="All" ? contacts : contacts.filter(c=>c.type===filter);
 
   useEffect(()=>{
     dbFetch("contacts",{order:"name",asc:true}).then(data=>{
-      if(data&&data.length>0) setContacts(data);
+      if(data) setContacts(data);
     });
   },[]);
   return (
@@ -668,13 +668,13 @@ function Documents() {
 }
 
 function Tasks() {
-  const [tasks, setTasks] = useState(SAMPLE_TASKS);
+  const [tasks, setTasks] = useState([]);
   const [filter, setFilter] = useState("Open");
   const visible = filter==="All" ? tasks : filter==="Open" ? tasks.filter(t=>t&&!t.done) : tasks.filter(t=>t&&t.done);
 
   useEffect(()=>{
     dbFetch("tasks",{order:"due",asc:true}).then(data=>{
-      if(data&&data.length>0) setTasks(data);
+      if(data) setTasks(data);
     });
   },[]);
 
@@ -715,12 +715,12 @@ function Tasks() {
 }
 
 function Financials() {
-  const [invoices, setInvoices] = useState(SAMPLE_INVOICES);
-  const [projects, setProjects] = useState(SAMPLE_PROJECTS);
+  const [invoices, setInvoices] = useState([]);
+  const [projects, setProjects] = useState([]);
 
   useEffect(()=>{
-    dbFetch("invoices",{order:"submitted_at",asc:false}).then(data=>{ if(data&&data.length>0) setInvoices(data); });
-    dbFetch("projects",{order:"created_at",asc:false}).then(data=>{ if(data&&data.length>0) setProjects(data); });
+    dbFetch("invoices",{order:"submitted_at",asc:false}).then(data=>{ if(data) setInvoices(data); });
+    dbFetch("projects",{order:"created_at",asc:false}).then(data=>{ if(data) setProjects(data); });
   },[]);
 
   const markPaid = async (id) => {
